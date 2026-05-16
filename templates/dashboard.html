@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConstructAdmin — Dashboard</title>
+  <meta name="description" content="Admin dashboard for Construction Management System" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <rect width="32" height="32" rx="8" fill="#1a56db" />
+          <path d="M6 24L10 10L16 18L22 10L26 24" stroke="white" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <circle cx="16" cy="8" r="2.5" fill="#f97316" />
+        </svg>
+      </div>
+      <span class="brand-text">ConstructAdmin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#dashboard" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="#sites" class="nav-item" data-page="sites" id="nav-sites">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>Sites</span>
+      </a>
+      <a href="#materials" class="nav-item" data-page="materials" id="nav-materials">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        </svg>
+        <span>Materials</span>
+      </a>
+      <a href="#allocations" class="nav-item" data-page="allocations" id="nav-allocations">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        <span>Allocations</span>
+      </a>
+      <a href="#requests" class="nav-item" data-page="requests" id="nav-requests">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Requests</span>
+        <span class="badge" id="pending-badge" style="display:none;"></span>
+      </a>
+      <a href="#reports" class="nav-item" data-page="reports" id="nav-reports">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+        <span>Reports</span>
+      </a>
+      <a href="#daily-reports" class="nav-item" data-page="daily-reports" id="nav-daily-reports">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+        <span>Daily Reports</span>
+      </a>
+      <a href="#attendance" class="nav-item" data-page="attendance" id="nav-attendance">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Attendance</span>
+      </a>
+      <a href="#accounting" class="nav-item" data-page="accounting" id="nav-accounting">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <line x1="2" y1="10" x2="22" y2="10" />
+          <line x1="7" y1="15" x2="7.01" y2="15" />
+          <line x1="12" y1="15" x2="12.01" y2="15" />
+        </svg>
+        <span>Accounting</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item logout-btn" id="logout-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN CONTENT ========== -->
+  <div class="main-wrapper">
+    <!-- Top Navbar -->
+    <header class="topnav">
+      <button class="hamburger" id="hamburger" aria-label="Toggle sidebar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <h1 class="page-title" id="page-title">Dashboard</h1>
+      <div class="topnav-right">
+        <button class="icon-btn" id="notif-btn" title="Alerts">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg>
+          <span class="notif-dot" id="notif-dot" style="display:none;"></span>
+        </button>
+        <div class="admin-chip">
+          <div class="admin-avatar" id="admin-avatar">A</div>
+          <div class="admin-info">
+            <span class="admin-name" id="admin-name">Admin</span>
+            <span class="admin-role">Administrator</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="content">
+      <!-- ===== DASHBOARD PAGE ===== -->
+      <section id="page-dashboard" class="page active">
+        <div class="stat-grid" id="stat-grid">
+          <div class="stat-card skeleton"></div>
+          <div class="stat-card skeleton"></div>
+          <div class="stat-card skeleton"></div>
+          <div class="stat-card skeleton"></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card">
+            <h3 class="chart-title">Material Usage Trend (Last 30 Days)</h3>
+            <canvas id="trend-chart" height="120"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3 class="chart-title">Site-wise Material Usage</h3>
+            <canvas id="site-chart" height="120"></canvas>
+          </div>
+        </div>
+        <div class="charts-row">
+          <div class="table-card">
+            <h3 class="table-title">Recent Usage Activity</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Site</th>
+                  <th>Material</th>
+                  <th>Used</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-activity-body">
+                <tr>
+                  <td colspan="4" class="loading-cell">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-card">
+            <h3 class="table-title">Recent Site Logs</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Site</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recent-daily-body">
+                <tr>
+                  <td colspan="3" class="loading-cell">Loading...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SITES PAGE ===== -->
+      <section id="page-sites" class="page">
+        <div class="page-actions">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" id="sites-search" placeholder="Search sites..." />
+          </div>
+          <button class="btn-primary" id="add-site-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Site
+          </button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Supervisor</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sites-body">
+              <tr>
+                <td colspan="5" class="loading-cell">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== MATERIALS PAGE ===== -->
+      <section id="page-materials" class="page">
+        <div class="page-actions">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" id="materials-search" placeholder="Search materials..." />
+          </div>
+          <button class="btn-primary" id="add-material-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Material
+          </button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Material Name</th>
+                <th>Unit</th>
+                <th>Cost/Unit</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="materials-body">
+              <tr>
+                <td colspan="4" class="loading-cell">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ALLOCATIONS PAGE ===== -->
+      <section id="page-allocations" class="page">
+        <div class="page-actions">
+          <div class="select-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            </svg>
+            <select id="alloc-site-select">
+              <option value="">-- Select a Site --</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="add-alloc-btn" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Allocate Material
+          </button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Unit</th>
+                <th>Allocated</th>
+                <th>Used</th>
+                <th>Remaining</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="alloc-body">
+              <tr>
+                <td colspan="6" class="loading-cell">Select a site to view allocations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== REQUESTS PAGE ===== -->
+      <section id="page-requests" class="page">
+        <div class="page-actions">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-status="all">All</button>
+            <button class="filter-tab" data-status="pending">Pending</button>
+            <button class="filter-tab" data-status="approved">Approved</button>
+            <button class="filter-tab" data-status="rejected">Rejected</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Site</th>
+                <th>Material</th>
+                <th>Requested Qty</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="requests-body">
+              <tr>
+                <td colspan="6" class="loading-cell">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== REPORTS PAGE ===== -->
+      <section id="page-reports" class="page">
+        <div class="reports-filters">
+          <div class="filter-group">
+            <label>Site</label>
+            <select id="report-site-select">
+              <option value="">All Sites</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>From Date</label>
+            <input type="date" id="report-start" />
+          </div>
+          <div class="filter-group">
+            <label>To Date</label>
+            <input type="date" id="report-end" />
+          </div>
+          <div class="filter-actions">
+            <button class="btn-primary" id="run-report-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              Run Report
+            </button>
+            <button class="btn-outline" id="export-pdf-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              Export PDF
+            </button>
+            <button class="btn-outline" id="export-excel-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="8" y1="13" x2="16" y2="13" />
+                <line x1="8" y1="17" x2="16" y2="17" />
+              </svg>
+              Export Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-row" id="report-summary" style="display:none;">
+          <div class="summary-card">
+            <span class="summary-label">Total Records</span>
+            <span class="summary-value" id="report-total-records">0</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Total Cost</span>
+            <span class="summary-value accent" id="report-total-cost">₹0</span>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Site</th>
+                <th>Material</th>
+                <th>Unit</th>
+                <th>Used Qty</th>
+                <th>Cost/Unit</th>
+                <th>Total Cost</th>
+              </tr>
+            </thead>
+            <tbody id="report-body">
+              <tr>
+                <td colspan="7" class="loading-cell">Run a report to see results</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== DAILY REPORTS PAGE ===== -->
+      <section id="page-daily-reports" class="page">
+        <div class="page-actions" style="margin-bottom: 20px;">
+          <div class="filter-group" style="display:flex; gap:10px; align-items:center;">
+            <select id="reports-site-select" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+              <option value="">All Sites</option>
+            </select>
+            <input type="date" id="reports-date" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;" />
+            <input type="text" id="reports-search" placeholder="Search site or progress..."
+              style="padding: 8px; border-radius: 6px; border: 1px solid #ccc; flex: 1;" />
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-primary" id="reports-refresh-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.42 5.42"/>
+              </svg>
+              Refresh
+            </button>
+            <button class="btn-outline" id="reports-export-pdf-btn">Export PDF</button>
+            <button class="btn-outline" id="reports-export-excel-btn">Export Excel</button>
+          </div>
+        </div>
+        
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Site Name</th>
+                <th>Supervisor</th>
+                <th>Work Progress</th>
+                <th>Labor Count</th>
+                <th>Weather</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="daily-reports-body">
+              <tr>
+                <td colspan="7" class="loading-cell">Loading reports...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ATTENDANCE PAGE ===== -->
+      <section id="page-attendance" class="page">
+        <div class="page-actions" style="margin-bottom: 20px;">
+          <div class="filter-group" style="display:flex; gap:10px; align-items:center;">
+            <select id="attendance-site-select" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;">
+              <option value="">All Sites</option>
+            </select>
+            <input type="date" id="attendance-date" style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;" />
+            <input type="text" id="attendance-search" placeholder="Search worker..."
+              style="padding: 8px; border-radius: 6px; border: 1px solid #ccc;" />
+          </div>
+          <div class="filter-actions" style="display:flex; gap:10px;">
+            <button class="btn-primary" id="attendance-refresh-btn">
+              Refresh
+            </button>
+            <button class="btn-outline" id="attendance-export-pdf-btn">
+              Export PDF
+            </button>
+            <button class="btn-outline" id="attendance-export-excel-btn">
+              Export Excel
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-grid" id="attendance-stat-grid" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#e0f2fe;color:#0284c7;"><svg width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+              </svg></div>
+            <div class="stat-info">
+              <div class="stat-title">Total Workers</div>
+              <div class="stat-value" id="att-total-workers">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#dcfce7;color:#16a34a;"><svg width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg></div>
+            <div class="stat-info">
+              <div class="stat-title">Present Today</div>
+              <div class="stat-value" id="att-present">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fee2e2;color:#dc2626;"><svg width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+              </svg></div>
+            <div class="stat-info">
+              <div class="stat-title">Absent Today</div>
+              <div class="stat-value" id="att-absent">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:#fef3c7;color:#d97706;"><svg width="24" height="24"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg></div>
+            <div class="stat-info">
+              <div class="stat-title">Attendance %</div>
+              <div class="stat-value" id="att-percentage">0%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <h3 class="table-title">Attendance Records</h3>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Worker Name</th>
+                <th>Role</th>
+                <th>Site</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-body">
+              <tr>
+                <td colspan="7" class="loading-cell">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== ACCOUNTING PAGE ===== -->
+      <section id="page-accounting" class="page">
+        <!-- Site Selection View -->
+        <div id="accounting-sites-view">
+          <div class="page-header-actions" style="margin-bottom: 20px;">
+            <h2 class="page-title">Accounts Overview</h2>
+          </div>
+          <div class="table-card">
+            <h3 class="table-title">Select Site</h3>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Site Name</th>
+                  <th>Current Balance</th>
+                  <th>Pending Requests</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="acc-sites-body">
+                <tr><td colspan="4" class="loading-cell">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Site Detail View -->
+        <div id="accounting-detail-view" style="display:none;">
+          <div class="page-header-actions" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <button class="btn-outline" id="acc-back-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg> Back
+              </button>
+              <h2 class="page-title" id="acc-detail-title">Site Ledger</h2>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="btn-outline" id="acc-export-pdf-btn">Export PDF</button>
+              <button class="btn-outline" id="acc-export-excel-btn">Export Excel</button>
+              <button class="btn-primary" id="add-credit-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add Credit
+              </button>
+            </div>
+          </div>
+
+          <div class="stat-grid" id="acc-detail-stats">
+            <div class="stat-card">
+              <div class="stat-info">
+                <div class="stat-title">Current Balance</div>
+                <div class="stat-value" id="det-current-balance">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <div class="stat-title">Total Credits</div>
+                <div class="stat-value text-success" id="det-total-credits">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info">
+                <div class="stat-title">Total Debits</div>
+                <div class="stat-value text-danger" id="det-total-debits">₹0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="page-header-actions" style="margin-bottom: 20px;">
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-acc-tab="ledger">Ledger</button>
+              <button class="filter-tab" data-acc-tab="credits">Credits</button>
+              <button class="filter-tab" data-acc-tab="debits">Debits</button>
+              <button class="filter-tab" data-acc-tab="requests">Requests <span class="badge" id="det-req-badge" style="display:none;">0</span></button>
+            </div>
+          </div>
+
+          <!-- Ledger Tab -->
+          <div id="acc-tab-ledger" class="acc-sub-view">
+            <div class="table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Created By</th>
+                    <th>Receipt</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody id="acc-ledger-body">
+                  <tr><td colspan="8" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Credits Tab -->
+          <div id="acc-tab-credits" class="acc-sub-view" style="display:none;">
+            <div class="table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Created By</th>
+                  </tr>
+                </thead>
+                <tbody id="acc-credits-body">
+                  <tr><td colspan="4" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Debits Tab -->
+          <div id="acc-tab-debits" class="acc-sub-view" style="display:none;">
+            <div class="table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Category</th>
+                    <th>Description</th>
+                    <th>Created By</th>
+                    <th>Receipt</th>
+                  </tr>
+                </thead>
+                <tbody id="acc-debits-body">
+                  <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Requests Tab -->
+          <div id="acc-tab-requests" class="acc-sub-view" style="display:none;">
+            <div class="table-card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Requested Amount</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="acc-requests-body">
+                  <tr><td colspan="5" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ========== TOAST ========== -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ========== MODAL ========== -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal" id="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Modal</h3>
+        <button class="modal-close" id="modal-close">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
+    </div>
+  </div>
+
+  <!-- ========== CONFIRM DIALOG ========== -->
+  <div id="confirm-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal confirm-modal">
+      <div class="confirm-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+      <h3 id="confirm-title">Confirm Action</h3>
+      <p id="confirm-message">Are you sure?</p>
+      <div class="confirm-actions">
+        <button class="btn-outline" id="confirm-cancel">Cancel</button>
+        <button class="btn-danger" id="confirm-ok">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+  </script>
+  <script src="{{ url_for('static', filename='js/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/dashboard-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/sites-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/materials-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/allocations-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/requests-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/reports-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/daily-reports-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/attendance-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/accounting-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
