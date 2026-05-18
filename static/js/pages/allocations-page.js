@@ -316,9 +316,7 @@ async function openViewLogsModal(siteId, materialId, materialName) {
         <td>${l.notes || '<span style="color:#9ca3af;font-size:12px;">--</span>'}</td>
         <td>
           ${l.receipt_url 
-            ? `<a href="${l.receipt_url}" target="_blank">
-                 <img src="${l.receipt_url}" alt="Receipt" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #e5e7eb; cursor:pointer;" title="Click to view receipt">
-               </a>` 
+            ? `<img src="${l.receipt_url}" onclick="openLightbox('${l.receipt_url}')" alt="Receipt" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #e5e7eb; cursor:pointer;" title="Click to view receipt">` 
             : `<span style="color:#9ca3af; font-size:12px;">No Receipt</span>`}
         </td>
       </tr>

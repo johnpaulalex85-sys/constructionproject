@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from utils.db import get_db
 from utils.helpers import serialize
 from bson import ObjectId
-import datetime, os, uuid
+import datetime, os, uuid, base64
 from werkzeug.utils import secure_filename
 
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "heic"}
@@ -182,10 +182,9 @@ def log_supervisor_usage():
     file = request.files.get("receipt")
     if file and file.filename and allowed_file(file.filename):
         ext      = file.filename.rsplit(".", 1)[1].lower()
-        filename = f"{uuid.uuid4().hex}.{ext}"
-        save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
-        file.save(save_path)
-        receipt_url = f"/static/uploads/receipts/{filename}"
+        file_bytes = file.read()
+        base64_encoded = base64.b64encode(file_bytes).decode("utf-8")
+        receipt_url = f"data:image/{ext};base64,{base64_encoded}"
 
     log = {
         "site_id":        site_id,

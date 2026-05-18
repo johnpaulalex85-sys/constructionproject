@@ -138,9 +138,7 @@ async function loadDashboard() {
           <td>${a.used_quantity} ${a.unit}</td>
           <td>
             ${a.receipt_url 
-              ? `<a href="${a.receipt_url}" target="_blank">
-                   <img src="${a.receipt_url}" alt="Receipt" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #e5e7eb; cursor:pointer;" title="Click to view receipt">
-                 </a>` 
+              ? `<img src="${a.receipt_url}" onclick="openLightbox('${a.receipt_url}')" alt="Receipt" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #e5e7eb; cursor:pointer;" title="Click to view receipt">` 
               : `<span style="color:#9ca3af; font-size:12px;">--</span>`}
           </td>
           <td>${fmtDate(a.date)}</td>

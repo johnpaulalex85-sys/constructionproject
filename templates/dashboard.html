@@ -793,6 +793,12 @@
     </div>
   </div>
 
+  <!-- Image Lightbox Overlay -->
+  <div id="image-lightbox-overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.85); z-index:9999; justify-content:center; align-items:center;">
+    <span onclick="document.getElementById('image-lightbox-overlay').style.display='none'" style="position:absolute; top:20px; right:30px; color:white; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+    <img id="image-lightbox-img" src="" style="max-width:90%; max-height:90%; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,0.5);" />
+  </div>
+
   <script>
     const API_BASE = '/api';
   </script>

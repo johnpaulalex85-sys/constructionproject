@@ -26,6 +26,11 @@ function closeModal() {
   document.getElementById('modal-overlay').style.display = 'none';
 }
 
+function openLightbox(url) {
+  document.getElementById('image-lightbox-img').src = url;
+  document.getElementById('image-lightbox-overlay').style.display = 'flex';
+}
+
 // Confirm dialog
 function confirmAction(title, message, onConfirm) {
   document.getElementById('confirm-title').textContent = title;
