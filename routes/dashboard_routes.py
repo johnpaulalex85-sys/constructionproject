@@ -44,6 +44,7 @@ def get_stats():
             "material": mat["name"] if mat else "Unknown",
             "used_quantity": log["used_quantity"],
             "unit": mat["unit"] if mat else "",
+            "receipt_url": log.get("receipt_url"),
             "date": log["date"].isoformat() if isinstance(log["date"], datetime.datetime) else str(log["date"])
         })
 

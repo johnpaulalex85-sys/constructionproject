@@ -181,12 +181,13 @@
                   <th>Site</th>
                   <th>Material</th>
                   <th>Used</th>
+                  <th>Receipt</th>
                   <th>Date</th>
                 </tr>
               </thead>
               <tbody id="recent-activity-body">
                 <tr>
-                  <td colspan="4" class="loading-cell">Loading...</td>
+                  <td colspan="5" class="loading-cell">Loading...</td>
                 </tr>
               </tbody>
             </table>
@@ -274,12 +275,14 @@
                 <th>Material Name</th>
                 <th>Unit</th>
                 <th>Cost/Unit</th>
+                <th>Stock Overview</th>
+                <th>Health</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="materials-body">
               <tr>
-                <td colspan="4" class="loading-cell">Loading...</td>
+                <td colspan="6" class="loading-cell">Loading...</td>
               </tr>
             </tbody>
           </table>
@@ -310,10 +313,10 @@
             <thead>
               <tr>
                 <th>Material</th>
-                <th>Unit</th>
                 <th>Allocated</th>
                 <th>Used</th>
                 <th>Remaining</th>
+                <th>Health</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -448,7 +451,7 @@
           <div style="display: flex; gap: 10px;">
             <button class="btn-primary" id="reports-refresh-btn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.42 5.42"/>
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.42 5.42" />
               </svg>
               Refresh
             </button>
@@ -456,7 +459,7 @@
             <button class="btn-outline" id="reports-export-excel-btn">Export Excel</button>
           </div>
         </div>
-        
+
         <div class="table-card">
           <table class="data-table">
             <thead>
@@ -592,7 +595,9 @@
                 </tr>
               </thead>
               <tbody id="acc-sites-body">
-                <tr><td colspan="4" class="loading-cell">Loading...</td></tr>
+                <tr>
+                  <td colspan="4" class="loading-cell">Loading...</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -600,11 +605,12 @@
 
         <!-- Site Detail View -->
         <div id="accounting-detail-view" style="display:none;">
-          <div class="page-header-actions" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div class="page-header-actions"
+            style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 10px;">
               <button class="btn-outline" id="acc-back-btn">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg> Back
               </button>
               <h2 class="page-title" id="acc-detail-title">Site Ledger</h2>
@@ -648,7 +654,8 @@
               <button class="filter-tab active" data-acc-tab="ledger">Ledger</button>
               <button class="filter-tab" data-acc-tab="credits">Credits</button>
               <button class="filter-tab" data-acc-tab="debits">Debits</button>
-              <button class="filter-tab" data-acc-tab="requests">Requests <span class="badge" id="det-req-badge" style="display:none;">0</span></button>
+              <button class="filter-tab" data-acc-tab="requests">Requests <span class="badge" id="det-req-badge"
+                  style="display:none;">0</span></button>
             </div>
           </div>
 
@@ -669,7 +676,9 @@
                   </tr>
                 </thead>
                 <tbody id="acc-ledger-body">
-                  <tr><td colspan="8" class="loading-cell">Loading...</td></tr>
+                  <tr>
+                    <td colspan="8" class="loading-cell">Loading...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -688,7 +697,9 @@
                   </tr>
                 </thead>
                 <tbody id="acc-credits-body">
-                  <tr><td colspan="4" class="loading-cell">Loading...</td></tr>
+                  <tr>
+                    <td colspan="4" class="loading-cell">Loading...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -709,7 +720,9 @@
                   </tr>
                 </thead>
                 <tbody id="acc-debits-body">
-                  <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
+                  <tr>
+                    <td colspan="6" class="loading-cell">Loading...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -729,7 +742,9 @@
                   </tr>
                 </thead>
                 <tbody id="acc-requests-body">
-                  <tr><td colspan="5" class="loading-cell">Loading...</td></tr>
+                  <tr>
+                    <td colspan="5" class="loading-cell">Loading...</td>
+                  </tr>
                 </tbody>
               </table>
             </div>

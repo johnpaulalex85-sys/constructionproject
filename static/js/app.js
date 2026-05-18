@@ -64,7 +64,7 @@ function navigateTo(page) {
         dailyReportsInited = true;
         initDailyReports();
       } else {
-        loadDailyReports(); 
+        loadDailyReports();
       }
       break;
     case 'attendance':

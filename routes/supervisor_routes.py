@@ -1,9 +1,15 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from utils.db import get_db
 from utils.helpers import serialize
 from bson import ObjectId
-import datetime
+import datetime, os, uuid
+from werkzeug.utils import secure_filename
+
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "heic"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
 supervisor_bp = Blueprint("supervisor", __name__)
 
@@ -139,36 +145,55 @@ def log_supervisor_usage():
     site_id = get_site_id()
     if not site_id:
         return jsonify({"msg": "Unauthorized"}), 403
-        
-    data = request.get_json()
-    if not data.get("material_id") or not data.get("used_quantity"):
+
+    # Support both JSON and multipart/form-data
+    if request.content_type and "multipart/form-data" in request.content_type:
+        material_id  = request.form.get("material_id")
+        used_quantity = request.form.get("used_quantity")
+        notes        = request.form.get("notes", "")
+    else:
+        data         = request.get_json() or {}
+        material_id  = data.get("material_id")
+        used_quantity = data.get("used_quantity")
+        notes        = data.get("notes", "")
+
+    if not material_id or not used_quantity:
         return jsonify({"msg": "material_id and used_quantity are required"}), 400
-        
+
     db = get_db()
-    # Check if allocation exists and has enough stock
-    alloc = db.allocations.find_one({"site_id": site_id, "material_id": data["material_id"]})
+    alloc = db.allocations.find_one({"site_id": site_id, "material_id": material_id})
     if not alloc:
         return jsonify({"msg": "No allocation found for this material"}), 404
-        
-    # Calculate current usage
+
     pipeline = [
-        {"$match": {"site_id": site_id, "material_id": data["material_id"]}},
+        {"$match": {"site_id": site_id, "material_id": material_id}},
         {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
     ]
     result = list(db.usage_logs.aggregate(pipeline))
     used = result[0]["total"] if result else 0
     remaining = alloc["allocated_quantity"] - used
-    
-    requested_usage = float(data["used_quantity"])
+
+    requested_usage = float(used_quantity)
     if requested_usage > remaining:
         return jsonify({"msg": f"Insufficient stock. Remaining: {remaining}"}), 400
-        
+
+    # ── Handle optional receipt photo ────────────────────────────────────────
+    receipt_url = None
+    file = request.files.get("receipt")
+    if file and file.filename and allowed_file(file.filename):
+        ext      = file.filename.rsplit(".", 1)[1].lower()
+        filename = f"{uuid.uuid4().hex}.{ext}"
+        save_path = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+        file.save(save_path)
+        receipt_url = f"/static/uploads/receipts/{filename}"
+
     log = {
-        "site_id": site_id,
-        "material_id": data["material_id"],
-        "used_quantity": requested_usage,
-        "notes": data.get("notes", ""),
-        "date": datetime.datetime.utcnow()
+        "site_id":        site_id,
+        "material_id":    material_id,
+        "used_quantity":  requested_usage,
+        "notes":          notes,
+        "receipt_url":    receipt_url,
+        "date":           datetime.datetime.utcnow()
     }
     result = db.usage_logs.insert_one(log)
     log["_id"] = result.inserted_id
@@ -190,7 +215,8 @@ def get_supervisor_usage_logs():
         entry = serialize(log)
         entry["material_name"] = mat["name"] if mat else "Unknown"
         entry["unit"] = mat["unit"] if mat else ""
-        entry["created_at"] = entry.get("date") # To support frontend expecting created_at
+        entry["created_at"] = entry.get("date")
+        entry["receipt_url"] = log.get("receipt_url")  # propagate photo URL
         enriched.append(entry)
         
     return jsonify(enriched), 200

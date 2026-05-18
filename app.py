@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
@@ -19,12 +19,17 @@ from routes.attendance_routes import attendance_bp
 from routes.accounting_routes import accounting_bp
 from routes.daily_reports_routes import daily_reports_bp
 
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads", "receipts")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 def create_app():
     app = Flask(__name__, template_folder="templates", static_folder="static")
     CORS(app) # Enable CORS for all routes
 
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "fallback-secret")
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 86400))
+    app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+    app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB max upload
 
     JWTManager(app)
 
@@ -63,7 +68,9 @@ def create_app():
             return jsonify(error=clean_msg, msg=clean_msg), 500
             
         # Return JSON instead of HTML for HTTP 500 errors
-        return jsonify(error=error_msg, msg="An internal server error occurred."), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify(error=error_msg, msg=f"Server Error: {error_msg}"), 500
 
     return app
 

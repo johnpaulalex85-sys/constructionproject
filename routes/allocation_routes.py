@@ -6,15 +6,15 @@ from bson import ObjectId
 
 allocation_bp = Blueprint("allocations", __name__)
 
-def _compute_remaining(db, site_id, material_id, allocated_qty):
-    """Compute used quantity from usage logs."""
+
+def _get_used_quantity(db, site_id, material_id):
+    """Sum all usage logs for this site+material."""
     pipeline = [
         {"$match": {"site_id": site_id, "material_id": material_id}},
         {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
     ]
     result = list(db.usage_logs.aggregate(pipeline))
-    used = result[0]["total"] if result else 0
-    return allocated_qty - used, used
+    return result[0]["total"] if result else 0
 
 
 @allocation_bp.route("/allocations/<site_id>", methods=["GET"])
@@ -26,12 +26,13 @@ def get_allocations(site_id):
     enriched = []
     for alloc in allocations:
         mat = db.materials.find_one({"_id": ObjectId(alloc["material_id"])})
-        remaining, used = _compute_remaining(
-            db, site_id, alloc["material_id"], alloc["allocated_quantity"]
-        )
+        used = _get_used_quantity(db, site_id, alloc["material_id"])
+        remaining = alloc["allocated_quantity"] - used
+
         entry = serialize(alloc)
         entry["material_name"] = mat["name"] if mat else "Unknown"
         entry["material_unit"] = mat["unit"] if mat else ""
+        entry["cost_per_unit"] = mat.get("cost_per_unit", 0) if mat else 0
         entry["used_quantity"] = used
         entry["remaining_quantity"] = remaining
         enriched.append(entry)
@@ -48,6 +49,11 @@ def create_allocation():
         return jsonify({"error": "site_id, material_id, and allocated_quantity are required"}), 400
 
     db = get_db()
+
+    # Validate material exists
+    mat = db.materials.find_one({"_id": ObjectId(data["material_id"])})
+    if not mat:
+        return jsonify({"error": "Material not found"}), 404
 
     # Check if allocation already exists for this site+material
     existing = db.allocations.find_one({
@@ -79,17 +85,11 @@ def update_allocation(allocation_id):
 
     new_qty = float(data.get("allocated_quantity", alloc["allocated_quantity"]))
 
-    # Ensure new allocated quantity is not less than already used
-    pipeline = [
-        {"$match": {"site_id": alloc["site_id"], "material_id": alloc["material_id"]}},
-        {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
-    ]
-    result = list(db.usage_logs.aggregate(pipeline))
-    used = result[0]["total"] if result else 0
-
+    # Ensure new quantity is not less than already used
+    used = _get_used_quantity(db, alloc["site_id"], alloc["material_id"])
     if new_qty < used:
         return jsonify({
-            "error": f"Cannot set allocated quantity below already used amount ({used})"
+            "error": f"Cannot reduce allocation below already used quantity ({used})"
         }), 400
 
     db.allocations.update_one(

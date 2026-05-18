@@ -6,12 +6,27 @@ from bson import ObjectId
 
 material_bp = Blueprint("materials", __name__)
 
+
 @material_bp.route("/materials", methods=["GET"])
 @jwt_required()
 def get_materials():
     db = get_db()
     materials = list(db.materials.find())
-    return jsonify(serialize(materials)), 200
+    result = []
+    for m in materials:
+        mat = serialize(m)
+        # Compute allocated_quantity across all allocations for this material
+        allocs = list(db.allocations.find({"material_id": str(m["_id"])}))
+        mat["allocated_quantity"] = sum(a.get("allocated_quantity", 0) for a in allocs)
+        # Compute total_used across all usage_logs for this material
+        pipeline = [
+            {"$match": {"material_id": str(m["_id"])}},
+            {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
+        ]
+        agg = list(db.usage_logs.aggregate(pipeline))
+        mat["total_used"] = agg[0]["total"] if agg else 0
+        result.append(mat)
+    return jsonify(result), 200
 
 
 @material_bp.route("/materials", methods=["POST"])
@@ -22,9 +37,12 @@ def create_material():
         return jsonify({"error": "name and unit are required"}), 400
 
     db = get_db()
+    if db.materials.find_one({"name": {"$regex": f"^{data['name']}$", "$options": "i"}}):
+        return jsonify({"error": "Material with this name already exists"}), 409
+
     material = {
-        "name": data["name"],
-        "unit": data["unit"],
+        "name": data["name"].strip(),
+        "unit": data["unit"].strip(),
         "cost_per_unit": float(data.get("cost_per_unit", 0))
     }
     result = db.materials.insert_one(material)
@@ -40,9 +58,9 @@ def update_material(material_id):
     update_fields = {}
 
     if data.get("name"):
-        update_fields["name"] = data["name"]
+        update_fields["name"] = data["name"].strip()
     if data.get("unit"):
-        update_fields["unit"] = data["unit"]
+        update_fields["unit"] = data["unit"].strip()
     if "cost_per_unit" in data:
         update_fields["cost_per_unit"] = float(data["cost_per_unit"])
 
@@ -64,4 +82,7 @@ def delete_material(material_id):
     result = db.materials.delete_one({"_id": ObjectId(material_id)})
     if result.deleted_count == 0:
         return jsonify({"error": "Material not found"}), 404
+    # Cascade: remove allocations and usage logs for this material
+    db.allocations.delete_many({"material_id": material_id})
+    db.usage_logs.delete_many({"material_id": material_id})
     return jsonify({"message": "Material deleted"}), 200
