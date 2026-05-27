@@ -22,7 +22,9 @@ const pageTitles = {
   reports: 'Reports & Analytics',
   'daily-reports': 'Daily Site Reports',
   attendance: 'Attendance',
-  accounting: 'Accounting & Finance'
+  accounting: 'Accounting & Finance',
+  documents: 'Document Management',
+  equipment: 'Equipment & Machinery'
 };
 
 // State
@@ -32,6 +34,8 @@ let reportsPageInited = false;
 let dailyReportsInited = false;
 let attendancePageInited = false;
 let accountingPageInited = false;
+let documentsPageInited = false;
+let equipmentPageInited = false;
 
 // Navigate to a page
 function navigateTo(page) {
@@ -74,13 +78,21 @@ function navigateTo(page) {
       if (!accountingPageInited) { accountingPageInited = true; window.pages.accounting.init(); }
       else { window.pages.accounting.init(); } // Refresh data on visit
       break;
+    case 'documents':
+      if (!documentsPageInited) { documentsPageInited = true; DocumentsPage.init(); }
+      else { DocumentsPage.loadData(); }
+      break;
+    case 'equipment':
+      if (!equipmentPageInited) { equipmentPageInited = true; EquipmentPage.init(); }
+      else { EquipmentPage.loadData(); }
+      break;
   }
 }
 
 // Hash-based routing
 function handleHash() {
   const hash = window.location.hash.replace('#', '') || 'dashboard';
-  const valid = ['dashboard', 'sites', 'materials', 'allocations', 'requests', 'reports', 'daily-reports', 'attendance', 'accounting'];
+  const valid = ['dashboard', 'sites', 'materials', 'allocations', 'requests', 'reports', 'daily-reports', 'attendance', 'accounting', 'documents', 'equipment'];
   navigateTo(valid.includes(hash) ? hash : 'dashboard');
 }
 

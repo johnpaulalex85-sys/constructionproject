@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 from utils.db import get_db
 from utils.helpers import serialize
 from bson import ObjectId
@@ -47,23 +47,58 @@ def update_request(request_id):
     if req["status"] != "pending":
         return jsonify({"error": "Only pending requests can be updated"}), 400
 
-    # If approving, auto-create/update allocation
+    # If approving, validate available stock and auto-create/update allocation
     if status == "approved":
+        mat = db.materials.find_one({"_id": ObjectId(req["material_id"])})
+        if not mat:
+            return jsonify({"error": "Material not found"}), 404
+
+        # Validate against warehouse available stock
+        allocs = list(db.allocations.find({"material_id": req["material_id"]}))
+        allocated_sum = sum(a.get("allocated_quantity", 0.0) for a in allocs)
+        total_qty = float(mat.get("total_quantity", 0.0))
+        available_qty = total_qty - allocated_sum
+
+        if req["requested_quantity"] > available_qty:
+            return jsonify({
+                "error": f"Cannot approve request. Insufficient stock in warehouse. Available: {available_qty} {mat['unit']} (Request: {req['requested_quantity']})"
+            }), 400
+
+        # Extract admin username from JWT
+        claims = get_jwt()
+        username = claims.get("username", "admin")
+
         existing_alloc = db.allocations.find_one({
             "site_id": req["site_id"],
             "material_id": req["material_id"]
         })
+        
         if existing_alloc:
             db.allocations.update_one(
                 {"_id": existing_alloc["_id"]},
                 {"$inc": {"allocated_quantity": req["requested_quantity"]}}
             )
+            alloc_id = str(existing_alloc["_id"])
+            action_type = "increase"
         else:
-            db.allocations.insert_one({
+            res_alloc = db.allocations.insert_one({
                 "site_id": req["site_id"],
                 "material_id": req["material_id"],
                 "allocated_quantity": req["requested_quantity"]
             })
+            alloc_id = str(res_alloc.inserted_id)
+            action_type = "creation"
+
+        # Log approved request allocation to allocation_history with action_type and admin username
+        db.allocation_history.insert_one({
+            "allocation_id": alloc_id,
+            "action_type": action_type,
+            "quantity_affected": req["requested_quantity"],
+            "quantity_added": req["requested_quantity"],  # compatibility
+            "username": username,
+            "note": f"Request approved (Req ID: {request_id})",
+            "date": datetime.datetime.utcnow()
+        })
 
     db.material_requests.update_one(
         {"_id": ObjectId(request_id)},

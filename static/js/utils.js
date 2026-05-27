@@ -74,6 +74,15 @@ function remainingClass(remaining, allocated) {
   return 'remaining-ok';
 }
 
+// Get health badge HTML
+function getHealthBadge(health) {
+  if (!health) return `<span class="status-badge badge-inactive">Unknown</span>`;
+  const pct = Math.round(health.score !== undefined ? health.score : 0);
+  let badgeClass = pct >= 70 ? 'badge-approved' : (pct >= 40 ? 'badge-pending' : 'badge-rejected');
+  let statusLabel = pct >= 70 ? 'Healthy' : (pct >= 40 ? 'Low Stock' : 'Critical');
+  return `<span class="status-badge ${badgeClass}" title="Health Score: ${pct}%">${pct}% — ${statusLabel}</span>`;
+}
+
 // Close modal on overlay click
 document.getElementById('modal-overlay').addEventListener('click', function (e) {
   if (e.target === this) closeModal();

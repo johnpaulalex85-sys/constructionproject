@@ -3,6 +3,8 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 import os
+import webbrowser
+import threading
 
 load_dotenv()
 
@@ -18,7 +20,9 @@ from routes.supervisor_routes import supervisor_bp
 from routes.attendance_routes import attendance_bp
 from routes.accounting_routes import accounting_bp
 from routes.daily_reports_routes import daily_reports_bp
-
+from routes.procurement_routes import procurement_bp
+from routes.document_routes import document_bp
+from routes.equipment_routes import equipment_bp
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads", "receipts")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -38,6 +42,10 @@ def create_app():
     def login_page():
         return render_template("login.html")
 
+    @app.route("/index.html")
+    def index_redirect():
+        return redirect(url_for("login_page"))
+
     @app.route("/dashboard")
     def dashboard_page():
         return render_template("dashboard.html")
@@ -55,7 +63,9 @@ def create_app():
     app.register_blueprint(attendance_bp, url_prefix="/api")
     app.register_blueprint(accounting_bp, url_prefix="/api")
     app.register_blueprint(daily_reports_bp, url_prefix="/api")
-
+    app.register_blueprint(procurement_bp, url_prefix="/api")
+    app.register_blueprint(document_bp, url_prefix="/api")
+    app.register_blueprint(equipment_bp, url_prefix="/api")
     @app.errorhandler(Exception)
     def handle_exception(e):
         from flask import jsonify
@@ -77,4 +87,7 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
+    # Open the browser automatically after a short delay (only in non-reloader child process)
+    if not os.environ.get("WERKZEUG_RUN_MAIN"):
+        threading.Timer(1.5, lambda: webbrowser.open("http://127.0.0.1:5000")).start()
     app.run(host="0.0.0.0", debug=True, port=5000)

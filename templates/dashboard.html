@@ -108,6 +108,24 @@
         </svg>
         <span>Accounting</span>
       </a>
+
+      <a href="#documents" class="nav-item" data-page="documents" id="nav-documents">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
+        <span>Documents</span>
+      </a>
+      <a href="#equipment" class="nav-item" data-page="equipment" id="nav-equipment">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        <span>Equipment</span>
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -751,6 +769,268 @@
           </div>
         </div>
       </section>
+
+
+      <!-- ===== DOCUMENTS PAGE ===== -->
+      <section id="page-documents" class="page">
+        <div class="page-header-actions" style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center;">
+          <h2 class="page-title">Document Control Center</h2>
+          <button class="btn-primary" id="upload-doc-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg> Add Document
+          </button>
+        </div>
+        
+        <div class="stat-grid" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Total Documents</div>
+              <div class="stat-value" id="doc-total">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Recent Uploads (7d)</div>
+              <div class="stat-value text-success" id="doc-recent">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Review Pending</div>
+              <div class="stat-value text-warning" id="doc-pending">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Expiring Soon</div>
+              <div class="stat-value text-danger" id="doc-expiring">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-actions" style="margin-bottom: 20px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+          <div class="search-box" style="flex:1; min-width:240px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="docs-search" placeholder="Search by title, tags, uploader..." />
+          </div>
+          <select id="docs-site-filter" class="form-control" style="width:auto; padding:8px 14px;">
+            <option value="">All Sites</option>
+          </select>
+          <select id="docs-category-select" class="form-control" style="width:auto; padding:8px 14px;">
+            <option value="">All Categories</option>
+            <option value="Blueprints">Blueprints</option>
+            <option value="Contracts">Contracts</option>
+            <option value="Safety Docs">Safety Docs</option>
+            <option value="Reports">Reports</option>
+            <option value="Invoices">Invoices</option>
+            <option value="Inspection Docs">Inspection Docs</option>
+            <option value="Certifications">Certifications</option>
+            <option value="Site Drawings">Site Drawings</option>
+            <option value="Purchase Docs">Purchase Docs</option>
+          </select>
+          <select id="docs-status-filter" class="form-control" style="width:auto; padding:8px 14px;">
+            <option value="">All Statuses</option>
+            <option value="Approved">Approved</option>
+            <option value="Review">Review</option>
+            <option value="Draft">Draft</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div class="table-card" style="margin-bottom:24px;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Document Details</th>
+                <th>Category</th>
+                <th>Site</th>
+                <th>Project</th>
+                <th>Uploaded By</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="docs-body">
+              <tr><td colspan="8" class="loading-cell">Loading documents...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-card">
+          <div style="padding:16px 20px; border-bottom:1px solid var(--border-color);">
+            <h3 style="margin:0; font-size:15px; font-weight:700;">Document Activity & Audit Log</h3>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>User</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="docs-activity-body">
+              <tr><td colspan="4" class="loading-cell">Loading activity...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="page-equipment" class="page">
+        <div class="page-header-actions" style="margin-bottom: 20px;">
+          <h2 class="page-title">Equipment & Machinery Operations Center</h2>
+        </div>
+        
+        <div class="stat-grid" style="margin-bottom: 20px;">
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Active Equipment</div>
+              <div class="stat-value text-success" id="eq-active">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Idle Equipment</div>
+              <div class="stat-value text-info" id="eq-idle">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Under Maintenance</div>
+              <div class="stat-value text-warning" id="eq-maintenance">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Breakdowns</div>
+              <div class="stat-value text-danger" id="eq-breakdowns">0</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <div class="stat-title">Monthly Fuel Cost</div>
+              <div class="stat-value" id="eq-fuel-cost">₹0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-actions" style="margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div class="filter-tabs">
+            <button class="filter-tab active" data-eq-tab="inventory">Inventory</button>
+            <button class="filter-tab" data-eq-tab="maintenance">Maintenance Logs</button>
+            <button class="filter-tab" data-eq-tab="fuel">Fuel Tracking</button>
+            <button class="filter-tab" data-eq-tab="breakdowns">Breakdowns</button>
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <select id="eq-site-filter" class="form-control" style="width:auto; padding:8px 14px;">
+              <option value="">All Sites</option>
+            </select>
+            <select id="eq-status-filter" class="form-control" style="width:auto; padding:8px 14px;">
+              <option value="">All Statuses</option>
+              <option value="Active">Active</option>
+              <option value="Idle">Idle</option>
+              <option value="Maintenance">Maintenance</option>
+              <option value="Breakdown">Breakdown</option>
+            </select>
+            <button class="btn-primary" id="add-equipment-btn">Register Equipment</button>
+            <button class="btn-danger" id="report-breakdown-btn">⚠ Report Breakdown</button>
+          </div>
+        </div>
+
+        <div id="eq-tab-inventory" class="eq-sub-view">
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Equipment ID</th>
+                  <th>Name / Specs</th>
+                  <th>Assigned Site</th>
+                  <th>Operator</th>
+                  <th>Status</th>
+                  <th>Operating Hours</th>
+                  <th>Next Service</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="eq-inventory-body">
+                <tr><td colspan="8" class="loading-cell">Loading equipment...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="eq-tab-maintenance" class="eq-sub-view" style="display:none;">
+          <div class="table-card">
+            <div style="display:flex; justify-content:flex-end; padding:12px 20px; border-bottom:1px solid var(--border-color);">
+              <button class="btn-primary btn-sm" id="log-maintenance-btn">Log Maintenance</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Equipment</th>
+                  <th>Type</th>
+                  <th>Cost</th>
+                  <th>Description</th>
+                  <th>Next Service</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="eq-maintenance-body">
+                <tr><td colspan="7" class="loading-cell">Loading maintenance logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="eq-tab-fuel" class="eq-sub-view" style="display:none;">
+          <div class="table-card">
+            <div style="display:flex; justify-content:flex-end; padding:12px 20px; border-bottom:1px solid var(--border-color);">
+              <button class="btn-primary btn-sm" id="log-fuel-btn">Log Fuel Usage</button>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Equipment</th>
+                  <th>Site</th>
+                  <th>Liters</th>
+                  <th>Total Cost</th>
+                  <th>Logged By</th>
+                </tr>
+              </thead>
+              <tbody id="eq-fuel-body">
+                <tr><td colspan="6" class="loading-cell">Loading fuel logs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="eq-tab-breakdowns" class="eq-sub-view" style="display:none;">
+          <div class="table-card">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Date Reported</th>
+                  <th>Equipment</th>
+                  <th>Issue Description</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="eq-breakdowns-body">
+                <tr><td colspan="5" class="loading-cell">Loading breakdowns...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -813,6 +1093,8 @@
   <script src="{{ url_for('static', filename='js/pages/daily-reports-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/attendance-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/accounting-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/documents-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/equipment-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 

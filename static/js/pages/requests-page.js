@@ -45,8 +45,10 @@ function renderRequests() {
     return `
       <tr>
         <td><strong>${r.site_name}</strong></td>
-        <td>${r.material_name}</td>
-        <td>${r.requested_quantity} ${r.material_unit}</td>
+        <td>
+          <strong>${r.material_name}</strong>
+        </td>
+        <td><strong>${r.requested_quantity}</strong></td>
         <td><span class="status-badge ${badgeCls}">${r.status}</span></td>
         <td>${fmtDate(r.created_at)}</td>
         <td>${actions}</td>

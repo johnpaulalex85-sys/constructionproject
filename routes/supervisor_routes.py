@@ -69,31 +69,48 @@ def get_supervisor_materials():
         return jsonify({"msg": "Unauthorized"}), 403
     
     db = get_db()
-    # Find all allocations for this site
-    allocations = list(db.allocations.find({"site_id": site_id}))
+    # Find all materials in the database
+    materials = list(db.materials.find())
     
     enriched = []
-    for alloc in allocations:
-        mat = db.materials.find_one({"_id": ObjectId(alloc["material_id"])})
-        if not mat: continue
+    for mat in materials:
+        material_id_str = str(mat["_id"])
         
-        # Calculate remaining quantity
-        pipeline = [
-            {"$match": {"site_id": site_id, "material_id": alloc["material_id"]}},
-            {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
-        ]
-        result = list(db.usage_logs.aggregate(pipeline))
-        used = result[0]["total"] if result else 0
+        # Check if this site has an allocation for this material
+        alloc = db.allocations.find_one({
+            "site_id": site_id,
+            "material_id": material_id_str
+        })
         
+        allocated_qty = float(alloc.get("allocated_quantity", 0.0)) if alloc else 0.0
+        
+        # Calculate used quantity at this site
+        used = 0.0
+        if alloc:
+            pipeline = [
+                {"$match": {"site_id": site_id, "material_id": material_id_str}},
+                {"$group": {"_id": None, "total": {"$sum": "$used_quantity"}}}
+            ]
+            result = list(db.usage_logs.aggregate(pipeline))
+            used = float(result[0]["total"]) if result else 0.0
+        
+        # Calculate warehouse available quantity (unallocated)
+        all_allocs = list(db.allocations.find({"material_id": material_id_str}))
+        allocated_sum = sum(a.get("allocated_quantity", 0.0) for a in all_allocs)
+        total_qty = float(mat.get("total_quantity", 0.0))
+        available_qty = max(0.0, total_qty - allocated_sum)
+
         enriched.append({
-            "material_id": str(alloc["material_id"]),
+            "material_id": material_id_str,
             "material_name": mat["name"],
             "unit": mat["unit"],
-            "allocated_quantity": alloc["allocated_quantity"],
-            "remaining_quantity": alloc["allocated_quantity"] - used
+            "allocated_quantity": allocated_qty,
+            "remaining_quantity": max(0.0, allocated_qty - used),
+            "available_quantity": available_qty
         })
     
     return jsonify(enriched), 200
+
 
 @supervisor_bp.route("/supervisor/requests", methods=["GET"])
 @jwt_required()
@@ -127,10 +144,25 @@ def create_supervisor_request():
         return jsonify({"msg": "material_id and quantity are required"}), 400
         
     db = get_db()
+    
+    mat = db.materials.find_one({"_id": ObjectId(data["material_id"])})
+    if not mat:
+        return jsonify({"msg": "Material not found"}), 404
+
+    # Calculate available stock
+    allocs = list(db.allocations.find({"material_id": data["material_id"]}))
+    allocated_sum = sum(a.get("allocated_quantity", 0) for a in allocs)
+    total_qty = float(mat.get("total_quantity", 0.0))
+    available_qty = total_qty - allocated_sum
+    requested_qty = float(data["quantity"])
+
+    if requested_qty > available_qty:
+        return jsonify({"msg": f"Insufficient stock in warehouse. Available: {available_qty} {mat['unit']}"}), 400
+
     req = {
         "site_id": site_id,
         "material_id": data["material_id"],
-        "requested_quantity": float(data["quantity"]),
+        "requested_quantity": requested_qty,
         "note": data.get("note", ""),
         "status": "pending",
         "created_at": datetime.datetime.utcnow()

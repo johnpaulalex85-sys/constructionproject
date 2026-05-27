@@ -14,14 +14,14 @@ async function apiRequest(method, endpoint, body = null, raw = false) {
 
   if (res.status === 401) {
     localStorage.clear();
-    window.location.href = 'index.html';
+    window.location.href = '/';
     return;
   }
 
   if (raw) return res; // For blob/file downloads
 
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  if (!res.ok) return data; // Return error object so callers can check res.error
   return data;
 }
 
