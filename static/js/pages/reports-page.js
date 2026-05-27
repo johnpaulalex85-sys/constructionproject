@@ -14,16 +14,31 @@ async function initReportsPage() {
 document.getElementById('run-report-btn').addEventListener('click', runReport);
 
 async function runReport() {
+  const type = document.getElementById('report-type-select').value;
   const siteId = document.getElementById('report-site-select').value;
   const start = document.getElementById('report-start').value;
   const end = document.getElementById('report-end').value;
 
-  let endpoint = '/reports/usage?';
+  let endpoint = `/reports/usage?type=${type}&`;
   if (siteId) endpoint += `site_id=${siteId}&`;
   if (start) endpoint += `start_date=${start}&`;
   if (end) endpoint += `end_date=${end}&`;
 
   const tbody = document.getElementById('report-body');
+  const thead = document.getElementById('report-table-head');
+  
+  thead.innerHTML = `
+    <tr>
+      <th>Date</th>
+      <th>Site</th>
+      <th>Category</th>
+      <th>Item/Description</th>
+      <th>Qty/Unit</th>
+      <th>Cost/Unit</th>
+      <th>Total Cost</th>
+    </tr>
+  `;
+
   tbody.innerHTML = `<tr><td colspan="7" class="loading-cell">Loading report...</td></tr>`;
 
   try {
@@ -31,7 +46,7 @@ async function runReport() {
     const summary = document.getElementById('report-summary');
 
     if (!data.rows.length) {
-      tbody.innerHTML = emptyRow(7, 'No usage data for the selected filters');
+      tbody.innerHTML = emptyRow(7, 'No records found for the selected filters');
       summary.style.display = 'none';
       return;
     }
@@ -44,9 +59,9 @@ async function runReport() {
       <tr>
         <td>${r.date}</td>
         <td>${r.site}</td>
-        <td>${r.material}</td>
-        <td>${r.unit}</td>
-        <td>${r.used_quantity}</td>
+        <td><span class="badge ${r.category === 'Material' ? 'badge-primary' : r.category === 'Fuel' ? 'badge-info' : 'badge-warning'}">${r.category}</span></td>
+        <td>${r.item}</td>
+        <td>${r.quantity} ${r.unit}</td>
         <td>${fmtCurrency(r.cost_per_unit)}</td>
         <td><strong>${fmtCurrency(r.total_cost)}</strong></td>
       </tr>
@@ -59,10 +74,11 @@ async function runReport() {
 }
 
 document.getElementById('export-pdf-btn').addEventListener('click', async () => {
+  const type = document.getElementById('report-type-select').value;
   const siteId = document.getElementById('report-site-select').value;
   const start = document.getElementById('report-start').value;
   const end = document.getElementById('report-end').value;
-  let endpoint = '/reports/export/pdf?';
+  let endpoint = `/reports/export/pdf?type=${type}&`;
   if (siteId) endpoint += `site_id=${siteId}&`;
   if (start) endpoint += `start_date=${start}&`;
   if (end) endpoint += `end_date=${end}&`;
@@ -75,10 +91,11 @@ document.getElementById('export-pdf-btn').addEventListener('click', async () => 
 });
 
 document.getElementById('export-excel-btn').addEventListener('click', async () => {
+  const type = document.getElementById('report-type-select').value;
   const siteId = document.getElementById('report-site-select').value;
   const start = document.getElementById('report-start').value;
   const end = document.getElementById('report-end').value;
-  let endpoint = '/reports/export/excel?';
+  let endpoint = `/reports/export/excel?type=${type}&`;
   if (siteId) endpoint += `site_id=${siteId}&`;
   if (start) endpoint += `start_date=${start}&`;
   if (end) endpoint += `end_date=${end}&`;

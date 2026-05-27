@@ -382,6 +382,15 @@
       <section id="page-reports" class="page">
         <div class="reports-filters">
           <div class="filter-group">
+            <label>Report Type</label>
+            <select id="report-type-select">
+              <option value="material">Material Usage</option>
+              <option value="fuel">Equipment Fuel</option>
+              <option value="maintenance">Equipment Maintenance</option>
+              <option value="all">All Expenditures</option>
+            </select>
+          </div>
+          <div class="filter-group">
             <label>Site</label>
             <select id="report-site-select">
               <option value="">All Sites</option>
@@ -435,7 +444,7 @@
 
         <div class="table-card">
           <table class="data-table">
-            <thead>
+            <thead id="report-table-head">
               <tr>
                 <th>Date</th>
                 <th>Site</th>
@@ -596,178 +605,485 @@
 
       <!-- ===== ACCOUNTING PAGE ===== -->
       <section id="page-accounting" class="page">
-        <!-- Site Selection View -->
-        <div id="accounting-sites-view">
-          <div class="page-header-actions" style="margin-bottom: 20px;">
-            <h2 class="page-title">Accounts Overview</h2>
+
+        <!-- ── TOP-LEVEL TABS ── -->
+        <div class="page-header-actions" style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+          <h2 class="page-title" id="acc-main-title">Financial Management</h2>
+          <div style="display:flex;gap:8px;" id="acc-global-actions">
+            <button class="btn-outline" id="acc-refresh-btn" title="Refresh all data">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.59-9.21l-5.42 5.42"/></svg>
+              Refresh
+            </button>
+            <button class="btn-outline" id="acc-export-global-btn">Export CSV</button>
           </div>
+        </div>
+
+        <div class="filter-tabs" style="margin-bottom:24px;" id="acc-top-tabs">
+          <button class="filter-tab active" data-acc-main="overview">📊 Overview</button>
+          <button class="filter-tab" data-acc-main="materials">🧱 Materials Cost</button>
+          <button class="filter-tab" data-acc-main="equipment">⚙️ Equipment Costs</button>
+          <button class="filter-tab" data-acc-main="ledger">🏗️ Site Ledger</button>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- TAB 1: OVERVIEW                                              -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="acc-view-overview" class="acc-main-view">
+
+          <!-- KPI Cards Row 1: Cash -->
+          <div style="margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-sub);text-transform:uppercase;">💰 Cash Position</div>
+          <div class="stat-grid" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dcfce7;color:#16a34a;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Total Credits</div>
+                <div class="stat-value text-success" id="ov-cash-credit">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fee2e2;color:#dc2626;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Total Debits</div>
+                <div class="stat-value text-danger" id="ov-cash-debit">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="7" y1="15" x2="7.01" y2="15"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Net Cash Balance</div>
+                <div class="stat-value" id="ov-cash-balance">₹0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI Cards Row 2: Materials -->
+          <div style="margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-sub);text-transform:uppercase;">🧱 Materials Cost</div>
+          <div class="stat-grid" style="margin-bottom:24px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#f3e8ff;color:#7c3aed;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Total Material Value</div>
+                <div class="stat-value" id="ov-mat-total">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fee2e2;color:#dc2626;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Material Used Cost</div>
+                <div class="stat-value text-danger" id="ov-mat-used">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#dcfce7;color:#16a34a;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 11.08 12 2 2 11.08"/><path d="M2 11.08V19a2 2 0 0 0 2 2h4v-7h8v7h4a2 2 0 0 0 2-2v-7.92"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Material Remaining Value</div>
+                <div class="stat-value text-success" id="ov-mat-remaining">₹0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI Cards Row 3: Equipment -->
+          <div style="margin-bottom:8px;font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text-sub);text-transform:uppercase;">⚙️ Equipment Costs</div>
+          <div class="stat-grid" style="margin-bottom:28px;">
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fef3c7;color:#d97706;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-8 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Total Fuel Spend</div>
+                <div class="stat-value" id="ov-eq-fuel">₹0</div>
+                <div class="stat-sub" id="ov-eq-fuel-liters" style="font-size:11px;color:var(--text-sub);">0 L total</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fce7f3;color:#be185d;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Total Maintenance Spend</div>
+                <div class="stat-value" id="ov-eq-maint">₹0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#fef3c7;color:#92400e;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div class="stat-info">
+                <div class="stat-title">Monthly Fuel Cost</div>
+                <div class="stat-value" id="ov-eq-monthly-fuel">₹0</div>
+                <div style="font-size:11px;color:var(--text-sub);">This month</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="charts-row" style="margin-bottom:28px;">
+            <div class="chart-card" style="flex:1;">
+              <h3 class="chart-title">Spending Breakdown</h3>
+              <div style="max-width:320px;margin:0 auto;"><canvas id="acc-spend-chart" height="220"></canvas></div>
+            </div>
+            <div class="chart-card" style="flex:2;">
+              <h3 class="chart-title">Site-wise Cost Comparison</h3>
+              <canvas id="acc-site-chart" height="140"></canvas>
+            </div>
+          </div>
+
+          <!-- Per-Site Cost Table -->
           <div class="table-card">
-            <h3 class="table-title">Select Site</h3>
+            <h3 class="table-title">Per-Site Financial Summary</h3>
             <table class="data-table">
               <thead>
                 <tr>
-                  <th>Site Name</th>
-                  <th>Current Balance</th>
-                  <th>Pending Requests</th>
+                  <th>Site</th>
+                  <th>Cash Balance</th>
+                  <th>Material Cost</th>
+                  <th>Fuel Cost</th>
+                  <th>Maintenance</th>
+                  <th>Total Spend</th>
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="acc-sites-body">
-                <tr>
-                  <td colspan="4" class="loading-cell">Loading...</td>
-                </tr>
+              <tbody id="ov-site-table-body">
+                <tr><td colspan="7" class="loading-cell">Loading...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Site Detail View -->
-        <div id="accounting-detail-view" style="display:none;">
-          <div class="page-header-actions"
-            style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <button class="btn-outline" id="acc-back-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg> Back
-              </button>
-              <h2 class="page-title" id="acc-detail-title">Site Ledger</h2>
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- TAB 2: MATERIALS COST                                        -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="acc-view-materials" class="acc-main-view" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <div class="search-box" style="max-width:300px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="mat-cost-search" placeholder="Search materials..." />
             </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="btn-outline" id="acc-export-pdf-btn">Export PDF</button>
-              <button class="btn-outline" id="acc-export-excel-btn">Export Excel</button>
-              <button class="btn-primary" id="add-credit-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Add Credit
-              </button>
+            <button class="btn-outline" id="mat-cost-export-btn">Export CSV</button>
+          </div>
+
+          <!-- Material cost KPIs -->
+          <div class="stat-grid" style="margin-bottom:20px;">
+            <div class="stat-card">
+              <div class="stat-info"><div class="stat-title">Total Inventory Value</div><div class="stat-value" id="mc-total-value">₹0</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info"><div class="stat-title">Allocated Value</div><div class="stat-value" id="mc-alloc-value">₹0</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info"><div class="stat-title">Used Cost</div><div class="stat-value text-danger" id="mc-used-value">₹0</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-info"><div class="stat-title">Remaining Value</div><div class="stat-value text-success" id="mc-remaining-value">₹0</div></div>
             </div>
           </div>
 
-          <div class="stat-grid" id="acc-detail-stats">
+          <div class="table-card">
+            <table class="data-table" id="mat-cost-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Unit</th>
+                  <th>Cost/Unit (₹)</th>
+                  <th>Total Stock</th>
+                  <th>Total Value</th>
+                  <th>Allocated Qty</th>
+                  <th>Allocated Cost</th>
+                  <th>Used Qty</th>
+                  <th>Used Cost</th>
+                  <th>Remaining Qty</th>
+                  <th>Remaining Value</th>
+                  <th>Health</th>
+                </tr>
+              </thead>
+              <tbody id="mat-cost-body">
+                <tr><td colspan="12" class="loading-cell">Loading...</td></tr>
+              </tbody>
+              <tfoot id="mat-cost-foot" style="display:none;">
+                <tr style="font-weight:700;background:var(--card-bg);">
+                  <td colspan="4">TOTALS</td>
+                  <td id="mct-total-value">₹0</td>
+                  <td></td>
+                  <td id="mct-alloc-cost">₹0</td>
+                  <td></td>
+                  <td id="mct-used-cost">₹0</td>
+                  <td></td>
+                  <td id="mct-remaining">₹0</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- TAB 3: EQUIPMENT COSTS                                       -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="acc-view-equipment" class="acc-main-view" style="display:none;">
+          <div class="stat-grid" style="margin-bottom:20px;">
             <div class="stat-card">
-              <div class="stat-info">
-                <div class="stat-title">Current Balance</div>
-                <div class="stat-value" id="det-current-balance">₹0</div>
+              <div class="stat-icon" style="background:#fef3c7;color:#d97706;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4"/></svg>
               </div>
+              <div class="stat-info"><div class="stat-title">Total Fuel Spend</div><div class="stat-value" id="eq-kpi-fuel">₹0</div></div>
             </div>
             <div class="stat-card">
-              <div class="stat-info">
-                <div class="stat-title">Total Credits</div>
-                <div class="stat-value text-success" id="det-total-credits">₹0</div>
+              <div class="stat-icon" style="background:#fce7f3;color:#be185d;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
               </div>
+              <div class="stat-info"><div class="stat-title">Total Maintenance Spend</div><div class="stat-value" id="eq-kpi-maint">₹0</div></div>
             </div>
             <div class="stat-card">
-              <div class="stat-info">
-                <div class="stat-title">Total Debits</div>
-                <div class="stat-value text-danger" id="det-total-debits">₹0</div>
+              <div class="stat-icon" style="background:#dbeafe;color:#1d4ed8;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
+              <div class="stat-info"><div class="stat-title">Total Liters Consumed</div><div class="stat-value" id="eq-kpi-liters">0 L</div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon" style="background:#f3e8ff;color:#7c3aed;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div class="stat-info"><div class="stat-title">Total Equipment Cost</div><div class="stat-value" id="eq-kpi-total">₹0</div></div>
             </div>
           </div>
 
-          <div class="page-header-actions" style="margin-bottom: 20px;">
-            <div class="filter-tabs">
-              <button class="filter-tab active" data-acc-tab="ledger">Ledger</button>
-              <button class="filter-tab" data-acc-tab="credits">Credits</button>
-              <button class="filter-tab" data-acc-tab="debits">Debits</button>
-              <button class="filter-tab" data-acc-tab="requests">Requests <span class="badge" id="det-req-badge"
-                  style="display:none;">0</span></button>
-            </div>
+          <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <button class="filter-tab active" data-eq-cost-tab="fuel">⛽ Fuel Logs</button>
+            <button class="filter-tab" data-eq-cost-tab="maintenance">🔧 Maintenance Logs</button>
           </div>
 
-          <!-- Ledger Tab -->
-          <div id="acc-tab-ledger" class="acc-sub-view">
+          <!-- Fuel Logs -->
+          <div id="eq-cost-tab-fuel">
             <div class="table-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0;">
+                <h3 class="table-title" style="margin:0;">Fuel Logs</h3>
+                <button class="btn-outline btn-sm" id="eq-fuel-export-btn">Export CSV</button>
+              </div>
               <table class="data-table">
                 <thead>
                   <tr>
                     <th>Date</th>
+                    <th>Equipment</th>
+                    <th>Site</th>
+                    <th>Liters</th>
+                    <th>Cost/L (₹)</th>
+                    <th>Total Cost (₹)</th>
+                    <th>Logged By</th>
+                  </tr>
+                </thead>
+                <tbody id="eq-fuel-body">
+                  <tr><td colspan="7" class="loading-cell">Loading...</td></tr>
+                </tbody>
+                <tfoot id="eq-fuel-foot" style="display:none;">
+                  <tr style="font-weight:700;background:var(--card-bg);">
+                    <td colspan="3">TOTAL</td>
+                    <td id="eq-fuel-total-liters">0 L</td>
+                    <td></td>
+                    <td id="eq-fuel-total-cost">₹0</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          <!-- Maintenance Logs -->
+          <div id="eq-cost-tab-maintenance" style="display:none;">
+            <div class="table-card">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0;">
+                <h3 class="table-title" style="margin:0;">Maintenance Logs</h3>
+                <button class="btn-outline btn-sm" id="eq-maint-export-btn">Export CSV</button>
+              </div>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Equipment</th>
                     <th>Type</th>
-                    <th>Amount</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Created By</th>
-                    <th>Receipt</th>
-                    <th>Balance</th>
-                  </tr>
-                </thead>
-                <tbody id="acc-ledger-body">
-                  <tr>
-                    <td colspan="8" class="loading-cell">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Credits Tab -->
-          <div id="acc-tab-credits" class="acc-sub-view" style="display:none;">
-            <div class="table-card">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Description</th>
-                    <th>Created By</th>
-                  </tr>
-                </thead>
-                <tbody id="acc-credits-body">
-                  <tr>
-                    <td colspan="4" class="loading-cell">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Debits Tab -->
-          <div id="acc-tab-debits" class="acc-sub-view" style="display:none;">
-            <div class="table-card">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Created By</th>
-                    <th>Receipt</th>
-                  </tr>
-                </thead>
-                <tbody id="acc-debits-body">
-                  <tr>
-                    <td colspan="6" class="loading-cell">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Requests Tab -->
-          <div id="acc-tab-requests" class="acc-sub-view" style="display:none;">
-            <div class="table-card">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Requested Amount</th>
+                    <th>Cost (₹)</th>
                     <th>Description</th>
                     <th>Status</th>
-                    <th>Actions</th>
                   </tr>
                 </thead>
-                <tbody id="acc-requests-body">
-                  <tr>
-                    <td colspan="5" class="loading-cell">Loading...</td>
-                  </tr>
+                <tbody id="eq-maint-body">
+                  <tr><td colspan="6" class="loading-cell">Loading...</td></tr>
                 </tbody>
+                <tfoot id="eq-maint-foot" style="display:none;">
+                  <tr style="font-weight:700;background:var(--card-bg);">
+                    <td colspan="3">TOTAL</td>
+                    <td id="eq-maint-total-cost">₹0</td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tfoot>
               </table>
             </div>
           </div>
         </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- TAB 4: SITE LEDGER                                           -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <div id="acc-view-ledger" class="acc-main-view" style="display:none;">
+
+          <!-- Site Selection -->
+          <div id="accounting-sites-view">
+            <div class="table-card">
+              <h3 class="table-title">Select a Site to View Ledger</h3>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Site Name</th>
+                    <th>Cash Balance</th>
+                    <th>Pending Requests</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="acc-sites-body">
+                  <tr><td colspan="4" class="loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Site Detail View -->
+          <div id="accounting-detail-view" style="display:none;">
+            <div class="page-header-actions" style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <button class="btn-outline" id="acc-back-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Back
+                </button>
+                <h2 class="page-title" id="acc-detail-title">Site Ledger</h2>
+              </div>
+              <div style="display:flex;gap:10px;">
+                <button class="btn-outline" id="acc-export-pdf-btn">Export PDF</button>
+                <button class="btn-outline" id="acc-export-excel-btn">Export Excel</button>
+                <button class="btn-primary" id="add-credit-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add Credit
+                </button>
+              </div>
+            </div>
+
+            <div class="stat-grid" id="acc-detail-stats" style="margin-bottom:20px;">
+              <div class="stat-card">
+                <div class="stat-info"><div class="stat-title">Current Cash Balance</div><div class="stat-value" id="det-current-balance">₹0</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-info"><div class="stat-title">Total Credits</div><div class="stat-value text-success" id="det-total-credits">₹0</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-info"><div class="stat-title">Total Debits</div><div class="stat-value text-danger" id="det-total-debits">₹0</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-info"><div class="stat-title">Material Cost (Site)</div><div class="stat-value" id="det-mat-cost">₹0</div></div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-info"><div class="stat-title">Equipment Cost (Site)</div><div class="stat-value" id="det-eq-cost">₹0</div></div>
+              </div>
+            </div>
+
+            <div class="page-header-actions" style="margin-bottom:20px;">
+              <div class="filter-tabs">
+                <button class="filter-tab active" data-acc-tab="ledger">Ledger</button>
+                <button class="filter-tab" data-acc-tab="credits">Credits</button>
+                <button class="filter-tab" data-acc-tab="debits">Debits</button>
+                <button class="filter-tab" data-acc-tab="requests">Requests <span class="badge" id="det-req-badge" style="display:none;">0</span></button>
+                <button class="filter-tab" data-acc-tab="site-materials">Material Costs</button>
+                <button class="filter-tab" data-acc-tab="site-equipment">Equipment Costs</button>
+              </div>
+            </div>
+
+            <!-- Ledger -->
+            <div id="acc-tab-ledger" class="acc-sub-view">
+              <div class="table-card">
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Category</th><th>Description</th><th>Created By</th><th>Receipt</th><th>Balance</th></tr></thead>
+                  <tbody id="acc-ledger-body"><tr><td colspan="8" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Credits -->
+            <div id="acc-tab-credits" class="acc-sub-view" style="display:none;">
+              <div class="table-card">
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Amount</th><th>Description</th><th>Created By</th></tr></thead>
+                  <tbody id="acc-credits-body"><tr><td colspan="4" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Debits -->
+            <div id="acc-tab-debits" class="acc-sub-view" style="display:none;">
+              <div class="table-card">
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Amount</th><th>Category</th><th>Description</th><th>Created By</th><th>Receipt</th></tr></thead>
+                  <tbody id="acc-debits-body"><tr><td colspan="6" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Requests -->
+            <div id="acc-tab-requests" class="acc-sub-view" style="display:none;">
+              <div class="table-card">
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Requested Amount</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead>
+                  <tbody id="acc-requests-body"><tr><td colspan="5" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Site Material Costs -->
+            <div id="acc-tab-site-materials" class="acc-sub-view" style="display:none;">
+              <div class="table-card">
+                <h3 class="table-title">Material Cost Breakdown for this Site</h3>
+                <table class="data-table">
+                  <thead><tr><th>Material</th><th>Unit</th><th>Cost/Unit</th><th>Allocated Qty</th><th>Allocated Cost</th><th>Used Qty</th><th>Used Cost</th><th>Remaining Qty</th><th>Remaining Value</th></tr></thead>
+                  <tbody id="site-mat-body"><tr><td colspan="9" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Site Equipment Costs -->
+            <div id="acc-tab-site-equipment" class="acc-sub-view" style="display:none;">
+              <div class="stat-grid" style="margin-bottom:20px;">
+                <div class="stat-card"><div class="stat-info"><div class="stat-title">Site Fuel Spend</div><div class="stat-value" id="site-eq-fuel-total">₹0</div></div></div>
+                <div class="stat-card"><div class="stat-info"><div class="stat-title">Site Maintenance Spend</div><div class="stat-value" id="site-eq-maint-total">₹0</div></div></div>
+              </div>
+              <div class="table-card" style="margin-bottom:16px;">
+                <h3 class="table-title">Fuel Logs</h3>
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Equipment</th><th>Liters</th><th>Cost (₹)</th><th>Logged By</th></tr></thead>
+                  <tbody id="site-fuel-body"><tr><td colspan="5" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+              <div class="table-card">
+                <h3 class="table-title">Maintenance Logs</h3>
+                <table class="data-table">
+                  <thead><tr><th>Date</th><th>Equipment</th><th>Type</th><th>Cost (₹)</th><th>Status</th></tr></thead>
+                  <tbody id="site-maint-body"><tr><td colspan="5" class="loading-cell">Loading...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+          </div><!-- /accounting-detail-view -->
+        </div><!-- /acc-view-ledger -->
+
+      </section>
+
+
       </section>
 
 
