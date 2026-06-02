@@ -14,12 +14,26 @@ def allowed_file(filename):
 supervisor_bp = Blueprint("supervisor", __name__)
 
 def get_site_id():
-    # For a supervisor, the identity is their site_id
-    # We verify the role to be sure
+    # For a supervisor, the identity is their user_id
     claims = get_jwt()
     if claims.get("role") != "supervisor":
         return None
-    return get_jwt_identity()
+    user_id = get_jwt_identity()
+    
+    db = get_db()
+    # First check if there's a site linked via supervisor_id (new way)
+    site = db.sites.find_one({"supervisor_id": user_id})
+    if site:
+        return str(site["_id"])
+        
+    # Fallback to checking by username (legacy way)
+    username = claims.get("username")
+    if username:
+        site = db.sites.find_one({"supervisor_username": username})
+        if site:
+            return str(site["_id"])
+            
+    return None
 
 @supervisor_bp.route("/supervisor/dashboard", methods=["GET"])
 @jwt_required()

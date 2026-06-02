@@ -11,10 +11,26 @@ from utils.helpers import serialize
 daily_reports_bp = Blueprint("daily_reports", __name__)
 
 def get_site_id():
+    # For a supervisor, the identity is their user_id
     claims = get_jwt()
     if claims.get("role") != "supervisor":
         return None
-    return get_jwt_identity()
+    user_id = get_jwt_identity()
+    
+    db = get_db()
+    # First check if there's a site linked via supervisor_id (new way)
+    site = db.sites.find_one({"supervisor_id": user_id})
+    if site:
+        return str(site["_id"])
+        
+    # Fallback to checking by username (legacy way)
+    username = claims.get("username")
+    if username:
+        site = db.sites.find_one({"supervisor_username": username})
+        if site:
+            return str(site["_id"])
+            
+    return None
 
 # --- SUPERVISOR: POST /daily-reports ---
 @daily_reports_bp.route("/daily-reports", methods=["POST"])

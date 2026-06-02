@@ -24,7 +24,8 @@ const pageTitles = {
   attendance: 'Attendance',
   accounting: 'Accounting & Finance',
   documents: 'Document Management',
-  equipment: 'Equipment & Machinery'
+  equipment: 'Equipment & Machinery',
+  supervisors: 'Supervisors Management'
 };
 
 // State
@@ -54,6 +55,7 @@ function navigateTo(page) {
 
   switch (page) {
     case 'dashboard': loadDashboard(); break;
+    case 'supervisors': loadSupervisors(); break;
     case 'sites': loadSites(); break;
     case 'materials': loadMaterials(); break;
     case 'allocations':
@@ -92,7 +94,7 @@ function navigateTo(page) {
 // Hash-based routing
 function handleHash() {
   const hash = window.location.hash.replace('#', '') || 'dashboard';
-  const valid = ['dashboard', 'sites', 'materials', 'allocations', 'requests', 'reports', 'daily-reports', 'attendance', 'accounting', 'documents', 'equipment'];
+  const valid = ['dashboard', 'sites', 'materials', 'allocations', 'requests', 'reports', 'daily-reports', 'attendance', 'accounting', 'documents', 'equipment', 'supervisors'];
   navigateTo(valid.includes(hash) ? hash : 'dashboard');
 }
 

@@ -10,7 +10,19 @@ attendance_bp = Blueprint("attendance", __name__)
 def get_role_and_site():
     claims = get_jwt()
     role = claims.get("role")
-    site_id = get_jwt_identity() if role == "supervisor" else None
+    site_id = None
+    if role == "supervisor":
+        user_id = get_jwt_identity()
+        db = get_db()
+        site = db.sites.find_one({"supervisor_id": user_id})
+        if site: 
+            site_id = str(site["_id"])
+        else:
+            username = claims.get("username")
+            if username:
+                site = db.sites.find_one({"supervisor_username": username})
+                if site: 
+                    site_id = str(site["_id"])
     return role, site_id
 
 @attendance_bp.route("/workers", methods=["GET"])

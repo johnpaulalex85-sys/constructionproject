@@ -13,6 +13,18 @@ site_bp = Blueprint("sites", __name__)
 def get_sites():
     db = get_db()
     sites = list(db.sites.find())
+    
+    # Enrich with supervisor info from users collection
+    for site in sites:
+        if "supervisor_id" in site:
+            user = db.users.find_one({"_id": ObjectId(site["supervisor_id"])})
+            if user:
+                site["supervisor_username"] = user.get("username", "")
+                site["supervisor_name"] = user.get("name", "")
+        # fallback for old sites
+        elif "supervisor_username" in site and "supervisor_name" not in site:
+             site["supervisor_name"] = "Legacy Supervisor"
+             
     return jsonify(serialize(sites)), 200
 
 
@@ -20,24 +32,31 @@ def get_sites():
 @jwt_required()
 def create_site():
     data = request.get_json()
-    required = ["name", "supervisor_username", "supervisor_password"]
+    required = ["name", "supervisor_id"]
     if not all(data.get(f) for f in required):
-        return jsonify({"error": "name, supervisor_username, and supervisor_password are required"}), 400
+        return jsonify({"error": "name and supervisor_id are required"}), 400
 
     db = get_db()
     if db.sites.find_one({"name": data["name"]}):
         return jsonify({"error": "Site name already exists"}), 409
 
-    hashed = bcrypt.hashpw(data["supervisor_password"].encode("utf-8"), bcrypt.gensalt())
+    # Verify supervisor exists
+    supervisor = db.users.find_one({"_id": ObjectId(data["supervisor_id"]), "role": "supervisor"})
+    if not supervisor:
+        return jsonify({"error": "Supervisor not found"}), 404
+
     site = {
         "name": data["name"],
         "is_active": True,
-        "supervisor_username": data["supervisor_username"],
-        "supervisor_password_hash": hashed,
+        "supervisor_id": data["supervisor_id"],
         "created_at": datetime.datetime.utcnow()
     }
     result = db.sites.insert_one(site)
     site["_id"] = result.inserted_id
+    
+    site["supervisor_name"] = supervisor.get("name")
+    site["supervisor_username"] = supervisor.get("username")
+    
     return jsonify(serialize(site)), 201
 
 
@@ -50,12 +69,16 @@ def update_site(site_id):
 
     if data.get("name"):
         update_fields["name"] = data["name"]
-    if data.get("supervisor_username"):
-        update_fields["supervisor_username"] = data["supervisor_username"]
-    if data.get("supervisor_password"):
-        update_fields["supervisor_password_hash"] = bcrypt.hashpw(
-            data["supervisor_password"].encode("utf-8"), bcrypt.gensalt()
-        )
+    if data.get("supervisor_id"):
+        # Verify supervisor exists
+        supervisor = db.users.find_one({"_id": ObjectId(data["supervisor_id"]), "role": "supervisor"})
+        if not supervisor:
+            return jsonify({"error": "Supervisor not found"}), 404
+        update_fields["supervisor_id"] = data["supervisor_id"]
+        update_fields["supervisor_username"] = supervisor.get("username")
+        update_fields["supervisor_name"] = supervisor.get("name")
+        # Remove legacy password field to avoid confusion
+        update_fields["supervisor_password_hash"] = ""
 
     if not update_fields:
         return jsonify({"error": "No valid fields to update"}), 400

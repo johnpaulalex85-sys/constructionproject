@@ -47,6 +47,15 @@
         </svg>
         <span>Sites</span>
       </a>
+      <a href="#supervisors" class="nav-item" data-page="supervisors" id="nav-supervisors">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>Supervisors</span>
+      </a>
       <a href="#materials" class="nav-item" data-page="materials" id="nav-materials">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path
@@ -260,6 +269,46 @@
               </tr>
             </thead>
             <tbody id="sites-body">
+              <tr>
+                <td colspan="5" class="loading-cell">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== SUPERVISORS PAGE ===== -->
+      <section id="page-supervisors" class="page">
+        <div class="page-actions">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" id="supervisors-search" placeholder="Search supervisors..." />
+          </div>
+          <button class="btn-primary" id="add-supervisor-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="8.5" cy="7" r="4"></circle>
+              <line x1="20" y1="8" x2="20" y2="14"></line>
+              <line x1="23" y1="11" x2="17" y2="11"></line>
+            </svg>
+            Add Supervisor
+          </button>
+        </div>
+        <div class="table-card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="supervisors-body">
               <tr>
                 <td colspan="5" class="loading-cell">Loading...</td>
               </tr>
@@ -1402,6 +1451,7 @@
   <script src="{{ url_for('static', filename='js/utils.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/dashboard-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/sites-page.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/pages/supervisors-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/materials-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/allocations-page.js') }}"></script>
   <script src="{{ url_for('static', filename='js/pages/requests-page.js') }}"></script>

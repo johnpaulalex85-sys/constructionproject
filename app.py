@@ -23,6 +23,7 @@ from routes.daily_reports_routes import daily_reports_bp
 from routes.procurement_routes import procurement_bp
 from routes.document_routes import document_bp
 from routes.equipment_routes import equipment_bp
+from routes.supervisor_management_routes import supervisor_management_bp
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads", "receipts")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -66,6 +67,7 @@ def create_app():
     app.register_blueprint(procurement_bp, url_prefix="/api")
     app.register_blueprint(document_bp, url_prefix="/api")
     app.register_blueprint(equipment_bp, url_prefix="/api")
+    app.register_blueprint(supervisor_management_bp, url_prefix="/api")
     @app.errorhandler(Exception)
     def handle_exception(e):
         from flask import jsonify

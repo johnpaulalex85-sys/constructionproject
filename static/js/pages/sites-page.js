@@ -22,7 +22,7 @@ function renderSites(sites) {
       <td>
         <div style="font-weight:600;">${s.name}</div>
       </td>
-      <td>${s.supervisor_username || '—'}</td>
+      <td>${s.supervisor_name ? s.supervisor_name + ' (' + s.supervisor_username + ')' : s.supervisor_username || '—'}</td>
       <td>
         <label class="toggle">
           <input type="checkbox" ${s.is_active ? 'checked' : ''}
@@ -52,22 +52,28 @@ document.getElementById('sites-search').addEventListener('input', function () {
 });
 
 // Add site
-document.getElementById('add-site-btn').addEventListener('click', () => {
+document.getElementById('add-site-btn').addEventListener('click', async () => {
+  let supervisorOptions = '<option value="">-- Select Supervisor --</option>';
+  try {
+    const supervisors = await apiGet('/admin/supervisors');
+    supervisors.forEach(s => {
+      supervisorOptions += `<option value="${s._id}">${s.name} (${s.username})</option>`;
+    });
+  } catch (e) {
+    console.error("Failed to load supervisors", e);
+  }
+
   openModal('Add New Site', `
     <form class="modal-form" id="site-form">
       <div class="form-group">
         <label>Site Name *</label>
         <input type="text" id="sf-name" placeholder="e.g. North Bridge Project" required />
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Supervisor Username *</label>
-          <input type="text" id="sf-username" placeholder="supervisor1" required />
-        </div>
-        <div class="form-group">
-          <label>Supervisor Password *</label>
-          <input type="password" id="sf-password" placeholder="••••••••" required />
-        </div>
+      <div class="form-group">
+        <label>Supervisor *</label>
+        <select id="sf-supervisor-id" required>
+          ${supervisorOptions}
+        </select>
       </div>
     </form>
   `, `
@@ -78,11 +84,11 @@ document.getElementById('add-site-btn').addEventListener('click', () => {
 
 async function submitAddSite() {
   const name = document.getElementById('sf-name').value.trim();
-  const username = document.getElementById('sf-username').value.trim();
-  const password = document.getElementById('sf-password').value;
-  if (!name || !username || !password) { showToast('All fields are required', 'warning'); return; }
+  const supervisor_id = document.getElementById('sf-supervisor-id').value;
+  if (!name || !supervisor_id) { showToast('All fields are required', 'warning'); return; }
   try {
-    await apiPost('/sites', { name, supervisor_username: username, supervisor_password: password });
+    const res = await apiPost('/sites', { name, supervisor_id });
+    if (res.error) throw new Error(res.error);
     closeModal();
     showToast('Site added successfully');
     loadSites();
@@ -91,24 +97,33 @@ async function submitAddSite() {
   }
 }
 
-function openEditSiteModal(id) {
+async function openEditSiteModal(id) {
   const site = allSites.find(s => s._id === id);
   if (!site) return;
+
+  let supervisorOptions = '<option value="">-- Select Supervisor --</option>';
+  try {
+    const supervisors = await apiGet('/admin/supervisors');
+    supervisors.forEach(s => {
+      const selected = (site.supervisor_id === s._id || site.supervisor_username === s.username) ? 'selected' : '';
+      supervisorOptions += `<option value="${s._id}" ${selected}>${s.name} (${s.username})</option>`;
+    });
+  } catch (e) {
+    console.error("Failed to load supervisors", e);
+  }
+
   openModal('Edit Site', `
     <form class="modal-form">
       <div class="form-group">
         <label>Site Name</label>
         <input type="text" id="ef-name" value="${site.name}" />
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Supervisor Username</label>
-          <input type="text" id="ef-username" value="${site.supervisor_username || ''}" />
-        </div>
-        <div class="form-group">
-          <label>New Password <small style="color:#9ca3af">(leave blank to keep)</small></label>
-          <input type="password" id="ef-password" placeholder="••••••••" />
-        </div>
+      <div class="form-group">
+        <label>Supervisor</label>
+        <select id="ef-supervisor-id">
+          ${supervisorOptions}
+        </select>
+        <small style="color:#9ca3af; display:block; margin-top:4px;">Existing legacy credentials will be replaced if a new supervisor is selected.</small>
       </div>
     </form>
   `, `
@@ -120,13 +135,12 @@ function openEditSiteModal(id) {
 async function submitEditSite(id) {
   const body = {};
   const name = document.getElementById('ef-name').value.trim();
-  const username = document.getElementById('ef-username').value.trim();
-  const password = document.getElementById('ef-password').value;
+  const supervisor_id = document.getElementById('ef-supervisor-id').value;
   if (name) body.name = name;
-  if (username) body.supervisor_username = username;
-  if (password) body.supervisor_password = password;
+  if (supervisor_id) body.supervisor_id = supervisor_id;
   try {
-    await apiPut(`/sites/${id}`, body);
+    const res = await apiPut(`/sites/${id}`, body);
+    if (res.error) throw new Error(res.error);
     closeModal();
     showToast('Site updated successfully');
     loadSites();

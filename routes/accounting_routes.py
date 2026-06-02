@@ -9,8 +9,16 @@ accounting_bp = Blueprint("accounting", __name__)
 
 def get_user_site_id():
     claims = get_jwt()
-    if claims.get("role") == "supervisor":
-        return get_jwt_identity()
+    if claims.get("role") != "supervisor":
+        return None
+    user_id = get_jwt_identity()
+    db = get_db()
+    site = db.sites.find_one({"supervisor_id": user_id})
+    if site: return str(site["_id"])
+    username = claims.get("username")
+    if username:
+        site = db.sites.find_one({"supervisor_username": username})
+        if site: return str(site["_id"])
     return None
 
 def init_site_account(db, site_id):
@@ -38,7 +46,7 @@ def get_balance(site_id=None):
     role = claims.get("role")
     
     if role == "supervisor":
-        site_id = get_jwt_identity()
+        site_id = get_user_site_id()
     elif not site_id:
         return jsonify({"msg": "Admin must provide site_id"}), 400
         
@@ -84,7 +92,7 @@ def get_transactions(site_id=None):
     role = claims.get("role")
     
     if role == "supervisor":
-        site_id = get_jwt_identity()
+        site_id = get_user_site_id()
     elif not site_id:
         return jsonify({"msg": "Admin must provide site_id"}), 400
         
@@ -105,7 +113,7 @@ def get_ledger(site_id=None):
     role = claims.get("role")
     
     if role == "supervisor":
-        site_id = get_jwt_identity()
+        site_id = get_user_site_id()
     elif not site_id:
         return jsonify({"msg": "Admin must provide site_id"}), 400
         
@@ -250,7 +258,7 @@ def get_amount_requests(site_id=None):
     
     query = {}
     if role == "supervisor":
-        query["site_id"] = get_jwt_identity()
+        query["site_id"] = get_user_site_id()
     elif site_id:
         query["site_id"] = str(site_id)
         
