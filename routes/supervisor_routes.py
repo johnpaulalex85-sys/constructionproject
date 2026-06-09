@@ -19,21 +19,62 @@ def get_site_id():
     if claims.get("role") != "supervisor":
         return None
     user_id = get_jwt_identity()
+    username = claims.get("username")
     
     db = get_db()
+    
+    # Try to get requested site ID from headers
+    requested_site_id = request.headers.get("X-Site-ID")
+    if requested_site_id:
+        # Verify supervisor has access to this site
+        query = {"_id": ObjectId(requested_site_id)}
+        if username:
+            query["$or"] = [
+                {"supervisor_id": user_id},
+                {"supervisor_username": username}
+            ]
+        else:
+            query["supervisor_id"] = user_id
+            
+        site = db.sites.find_one(query)
+        if site:
+            return str(site["_id"])
+            
     # First check if there's a site linked via supervisor_id (new way)
     site = db.sites.find_one({"supervisor_id": user_id})
     if site:
         return str(site["_id"])
         
     # Fallback to checking by username (legacy way)
-    username = claims.get("username")
     if username:
         site = db.sites.find_one({"supervisor_username": username})
         if site:
             return str(site["_id"])
             
     return None
+
+@supervisor_bp.route("/supervisor/sites", methods=["GET"])
+@jwt_required()
+def get_supervisor_sites():
+    claims = get_jwt()
+    if claims.get("role") != "supervisor":
+        return jsonify({"msg": "Unauthorized"}), 403
+    user_id = get_jwt_identity()
+    username = claims.get("username")
+    
+    db = get_db()
+    
+    query = {}
+    if username:
+        query["$or"] = [
+            {"supervisor_id": user_id},
+            {"supervisor_username": username}
+        ]
+    else:
+        query["supervisor_id"] = user_id
+        
+    sites = list(db.sites.find(query))
+    return jsonify(serialize(sites)), 200
 
 @supervisor_bp.route("/supervisor/dashboard", methods=["GET"])
 @jwt_required()
